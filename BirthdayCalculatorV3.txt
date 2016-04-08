@@ -1,0 +1,110 @@
+#My version of the calendar calculator
+
+daysOfMonths = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+def isLeapYear(year):
+    if year % 4 != 0:
+        return False
+    elif year % 100 != 0:
+        return True
+    elif year % 400 != 0:
+        return False
+    else:
+        return True
+
+def  isFebruary(month):
+    if month == 2:
+        return True
+    else:
+        return False
+
+
+def countDaysInYears(start_year, end_year): #calculates all the days from the start year up to, but not including, the end year
+    year = 0 #my 'counter' for the loop
+    days_to_end_year = 0 #this will keep track of all the days from year 0 to the end year
+    while year < end_year: #this loop calculates all the days from year 0 to the end year
+        days_to_end_year += 365
+        if isLeapYear(year): #add an extra day if it's a leap year
+            days_to_end_year += 1
+        year += 1
+
+    year = 0 
+    days_to_start_year = 0 #this will keep track of all the days from year 0 to the start year
+    while year < start_year: #this loop calculates all the days from year 0 to the start year
+        days_to_start_year += 365
+        if isLeapYear(year):
+            days_to_start_year += 1
+        year += 1
+
+    days = days_to_end_year - days_to_start_year #this variable is equal to all the days between start year and end year
+    return days
+
+def countDaysInMonths(birth_month, current_month, birth_year, current_year):
+    days = 0
+    #calculate days from beginning of current year to current month
+    month = 1
+    while month < current_month:
+        days += daysOfMonths[month - 1]
+        if isLeapYear(current_year) and isFebruary(month):
+            days += 1
+        month += 1
+
+    #calculate days from before your birth month to the beginning of the year
+    month = birth_month - 1
+    while month > 0:
+        days -= daysOfMonths[month - 1]
+        if isLeapYear(birth_year) and isFebruary(month):
+            days -= 1
+        month -= 1
+    return days #this is equal to the days from the beginning of the current year all the way to the current month, minus all the days from before your birth month to the beginning of the year
+
+def countExtraDays(birth_day, current_day):
+    days = 0
+    days += current_day #adds all the days from the beginning of the month to the current day
+    days -= birth_day #subtracks all the days from the beginning of the month to your birthday
+    return days
+
+def doesDayExist(month, day): #checks to make sure that the day is actually in the selected month
+    if day <= 0 or day > daysOfMonths[month -1]:
+        return False
+    else:
+        return True
+
+def validInput(y1, m1, d1, y2, m2, d2): #checks to make sure the user enters a valid input
+    if y1 < 0 or y2 < 0:
+        return "You must enter a positive year."
+    elif m1 > 12 or m1 <= 0 or m2 > 12 or m2 <=0:
+        return "You must enter a valid month."
+    elif doesDayExist(m1, d1) == False or doesDayExist(m2, d2) == False:
+        return "Must enter a valid day."
+    elif (y2 < y1) or (y1 == y2 and m2 < m1) or (y1 == y2 and m1 == m2 and d2 < d1):
+        return "The start date must be before the end date."
+    else:
+        return True
+
+def daysBetweenDates(y1, m1, d1, y2, m2, d2): #where all the action happens
+    if validInput(y1, m1, d1, y2, m2, d2) == True: #Check to see if the input was valid before running
+        days = 0
+        days += countDaysInYears(y1, y2) #add all the days from the years
+        days += countDaysInMonths(m1, m2, y1, y2) #add or subtract the extra days from the months
+        days += countExtraDays(d1, d2) #add or subtract the extra days
+        return days
+    else:
+        return validInput(y1, m1, d1, y2, m2, d2)
+
+#test taken from dave's version
+def test():
+    test_cases = [((2012,1,1,2012,2,28), 58), 
+                  ((2012,1,1,2012,3,1), 60),
+                  ((2011,6,30,2012,6,30), 366),
+                  ((2011,1,1,2012,8,8), 585 ),
+                  ((1900,1,1,1999,12,31), 36523)]
+    
+    for (args, answer) in test_cases:
+        result = daysBetweenDates(*args)
+        if result != answer:
+            print "Test with data:", args, "failed"
+        else:
+            print "Test case passed!"
+
+test()
